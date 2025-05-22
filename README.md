@@ -59,3 +59,26 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Laravel Event Management Project
+
+This is a Laravel-based event management system where users can create events, manage participants and contributions, and track expenses.
+
+---
+
+## Getting Started
+
+Follow these instructions to clone and set up this project on your local machine.
+
+### Prerequisites
+
+- PHP 8.x
+- Composer
+- MySQL or any other supported database
+- Git
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/your-username/laravel-event-management.git
+cd laravel-event-management
