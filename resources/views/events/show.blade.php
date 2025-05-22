@@ -41,11 +41,12 @@
                 <th class="py-2 px-4 text-left">Expected Contribution</th>
                 <th class="py-2 px-4 text-left">Total Paid</th>
                 <th class="py-2 px-4 text-left">Add Payment</th>
+                <th class="py-2 px-4 text-left">View Payments</th>
             </tr>
         </thead>
         <tbody>
             @foreach($event->participants as $participant)
-                <tr class="border-t">
+                <tr class="border-t" x-data="{ showModal: false }">
                     <td class="py-2 px-4">{{ $participant->name }}</td>
                     <td class="py-2 px-4">${{ number_format($participant->expected_contribution, 2) }}</td>
                     <td class="py-2 px-4">${{ number_format($participant->total_paid, 2) }}</td>
@@ -56,6 +57,54 @@
                             <input type="date" name="paid_at" required class="border rounded p-1" />
                             <button type="submit" class="bg-green-600 text-black px-2 py-1 rounded hover:bg-green-700">Add</button>
                         </form>
+                    </td>
+                    <td class="py-2 px-4">
+                        <!-- Button to open modal -->
+                        <button @click="showModal = true" class="bg-indigo-600 text-black px-3 py-1 rounded hover:bg-indigo-700">
+                            View Payments
+                        </button>
+
+                        <!-- Modal -->
+                        <div 
+                            x-show="showModal" 
+                            style="display: none;" 
+                            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                            @keydown.escape.window="showModal = false"
+                        >
+                            <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-auto p-6 relative">
+                                <!-- Close button -->
+                                <button 
+                                    @click="showModal = false" 
+                                    class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
+                                    aria-label="Close modal"
+                                >
+                                    &times;
+                                </button>
+
+                                <h2 class="text-2xl font-semibold mb-4">Payments History for {{ $participant->name }}</h2>
+
+                                @if($participant->payments->isEmpty())
+                                    <p>No payments made yet.</p>
+                                @else
+                                    <table class="min-w-full bg-white rounded shadow">
+                                        <thead class="bg-gray-200 sticky top-0">
+                                            <tr>
+                                                <th class="py-2 px-4 text-left">Payment Amount</th>
+                                                <th class="py-2 px-4 text-left">Payment Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($participant->payments as $payment)
+                                                <tr class="border-t">
+                                                    <td class="py-2 px-4">${{ number_format($payment->amount, 2) }}</td>
+                                                    <td class="py-2 px-4">{{ \Carbon\Carbon::parse($payment->paid_at)->format('M d, Y') }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                @endif
+                            </div>
+                        </div>
                     </td>
                 </tr>
             @endforeach
