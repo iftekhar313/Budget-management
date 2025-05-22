@@ -95,7 +95,7 @@
                                 <div class="modal-dialog modal-lg modal-dialog-scrollable">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="paymentModalLabel{{ $participant->id }}">Payments for {{ $participant->name }}</h5>
+                                            <h5 class="modal-title" id="paymentModalLabel{{ $participant->id }}">Payments from {{ $participant->name }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
@@ -110,12 +110,18 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
+                                                        @php $totalPayment = 0; @endphp
                                                         @foreach($participant->payments as $payment)
+                                                        @php $totalPayment += $payment->amount; @endphp
                                                         <tr>
                                                             <td>${{ number_format($payment->amount, 2) }}</td>
                                                             <td>{{ \Carbon\Carbon::parse($payment->paid_at)->format('M d, Y') }}</td>
                                                         </tr>
                                                         @endforeach
+                                                        <tr class="table-secondary fw-bold">
+                                                            <td>Total</td>
+                                                            <td>${{ number_format($totalPayment, 2) }}</td>
+                                                        </tr>
                                                     </tbody>
                                                 </table>
                                             @endif
