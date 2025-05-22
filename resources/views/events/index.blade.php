@@ -20,6 +20,13 @@
                             <p class="card-text"><strong>Budget:</strong> €{{ number_format($event->budget, 2) }}</p>
                             <p class="card-text"><strong>Date:</strong> {{ $event->date->format('M d, Y') }}</p>
                             <a href="{{ route('events.show', $event) }}" class="btn btn-outline-primary mt-2">View Details</a>
+                            <a href="{{ route('events.edit', $event) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+
+                            <form action="{{ route('events.destroy', $event) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
                         </div>
                     </div>
                 </div>

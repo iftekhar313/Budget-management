@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EventController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $events = Event::where('user_id', auth()->id())->with(['participants.payments', 'expenses'])->get();
+        $events = Event::where('user_id', auth()->id())
+            ->with(['participants.payments', 'expenses'])
+            ->orderBy('date', 'asc') // Sort by date ascending
+            ->get();
+
         return view('events.index', compact('events'));
     }
 
@@ -59,24 +65,44 @@ class EventController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Event $event)
     {
-        //
+        $this->authorize('update', $event);
+        return view('events.edit', compact('event'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Event $event)
     {
-        //
+        $this->authorize('update', $event); // Optional authorization
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'budget' => 'required|numeric|min:0',
+            'destination' => 'required|string|max:255',
+            'date' => 'required|date',
+        ]);
+
+        $event->update([
+            'name' => $request->name,
+            'budget' => $request->budget,
+            'destination' => $request->destination,
+            'date' => $request->date,
+        ]);
+
+        return redirect()->route('events.index')->with('success', 'Event updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Event $event)
     {
-        //
+        $this->authorize('delete', $event); // Optional authorization
+        $event->delete();
+
+        return redirect()->route('events.index')->with('success', 'Event deleted successfully.');
     }
 }
