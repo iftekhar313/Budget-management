@@ -37,6 +37,6 @@
 <main class="container py-4">
     @yield('content')
 </main>
-
+<script src="//unpkg.com/alpinejs" defer></script>
 </body>
 </html>
