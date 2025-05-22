@@ -28,7 +28,7 @@
         <label class="block mb-1 font-medium">Expected Contribution ($)</label>
         <input type="number" step="0.01" name="expected_contribution" required class="w-full border rounded p-2" />
     </div>
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add Participant</button>
+    <button type="submit" class="bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700">Add Participant</button>
 </form>
 
 @if($event->participants->isEmpty())
@@ -92,7 +92,7 @@
         <label class="block mb-1 font-medium">Expense Date</label>
         <input type="date" name="expense_date" required class="w-full border rounded p-2" />
     </div>
-    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Add Expense</button>
+    <button type="submit" class="bg-red-600 text-black px-4 py-2 rounded hover:bg-red-700">Add Expense</button>
 </form>
 
 @if($event->expenses->isEmpty())
