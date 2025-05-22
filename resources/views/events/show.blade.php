@@ -1,172 +1,198 @@
 @extends('layouts.app')
 
 @section('title', $event->name)
+@push('styles')
+<style>
+    .marquee {
+        white-space: nowrap;
+        overflow: hidden;
+        box-sizing: border-box;
+        animation: marquee 10s linear infinite;
+    }
 
+    @keyframes marquee {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+    }
+</style>
+@endpush
 @section('content')
-<h1 class="text-3xl font-bold mb-6">{{ $event->name }}</h1>
+<div class="container my-5">
+   <h1 class="mb-4 display-5 fw-bold text-primary">{{ $event->name }}</h1>
 
-<div class="mb-6">
-    <p><strong>Destination:</strong> {{ $event->destination }}</p>
-    <p><strong>Date:</strong> {{ $event->date->format('M d, Y') }}</p>
-    <p><strong>Budget:</strong> ${{ number_format($event->budget, 2) }}</p>
-    <p><strong>Total Contributions:</strong> ${{ number_format($event->total_contributions, 2) }}</p>
-    <p><strong>Total Expenses:</strong> ${{ number_format($event->total_expenses, 2) }}</p>
-</div>
-
-<hr class="mb-6" />
-
-<!-- Participants Section -->
-<h2 class="text-2xl font-semibold mb-4">Participants</h2>
-
-<form method="POST" action="{{ route('participants.store', $event) }}" class="mb-6 max-w-lg bg-white p-4 rounded shadow">
-    @csrf
     <div class="mb-4">
-        <label class="block mb-1 font-medium">Name</label>
-        <input type="text" name="name" required class="w-full border rounded p-2" />
+        <ul class="list-group fs-5">
+            <li class="list-group-item"><strong>Destination:</strong> {{ $event->destination }}</li>
+            <li class="list-group-item">
+                <strong>Date:</strong>
+                <div class="text-success fw-bold marquee">
+                    {{ $event->date->format('M d, Y') }}
+                </div>
+            </li>
+            <li class="list-group-item"><strong>Budget:</strong> ${{ number_format($event->budget, 2) }}</li>
+            <li class="list-group-item"><strong>Total Contributions:</strong> ${{ number_format($event->total_contributions, 2) }}</li>
+            <li class="list-group-item"><strong>Total Expenses:</strong> ${{ number_format($event->total_expenses, 2) }}</li>
+            <li class="list-group-item text-danger fw-semibold"><strong>Total Remaining Contribution:</strong> ${{ number_format($event->total_contributions - $event->total_expenses, 2) }}</li>
+        </ul>
     </div>
-    <div class="mb-4">
-        <label class="block mb-1 font-medium">Expected Contribution ($)</label>
-        <input type="number" step="0.01" name="expected_contribution" required class="w-full border rounded p-2" />
-    </div>
-    <button type="submit" class="bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700">Add Participant</button>
-</form>
 
-@if($event->participants->isEmpty())
-    <p>No participants yet.</p>
-@else
-    <table class="min-w-full bg-white rounded shadow mb-6">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="py-2 px-4 text-left">Name</th>
-                <th class="py-2 px-4 text-left">Expected Contribution</th>
-                <th class="py-2 px-4 text-left">Total Paid</th>
-                <th class="py-2 px-4 text-left">Add Payment</th>
-                <th class="py-2 px-4 text-left">View Payments</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($event->participants as $participant)
-                <tr class="border-t" x-data="{ showModal: false }">
-                    <td class="py-2 px-4">{{ $participant->name }}</td>
-                    <td class="py-2 px-4">${{ number_format($participant->expected_contribution, 2) }}</td>
-                    <td class="py-2 px-4">${{ number_format($participant->total_paid, 2) }}</td>
-                    <td class="py-2 px-4">
-                        <form method="POST" action="{{ route('payments.store', $participant) }}" class="flex space-x-2 items-center">
-                            @csrf
-                            <input type="number" step="0.01" name="amount" placeholder="Amount" required class="border rounded p-1 w-24" />
-                            <input type="date" name="paid_at" required class="border rounded p-1" />
-                            <button type="submit" class="bg-green-600 text-black px-2 py-1 rounded hover:bg-green-700">Add</button>
-                        </form>
-                    </td>
-                    <td class="py-2 px-4">
-                        <!-- Button to open modal -->
-                        <button @click="showModal = true" class="bg-indigo-600 text-black px-3 py-1 rounded hover:bg-indigo-700">
-                            View Payments
-                        </button>
+    <hr>
 
-                        <!-- Modal -->
-                        <div 
-                            x-show="showModal" 
-                            style="display: none;" 
-                            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                            @keydown.escape.window="showModal = false"
-                        >
-                            <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-auto p-6 relative">
-                                <!-- Close button -->
-                                <button 
-                                    @click="showModal = false" 
-                                    class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 text-2xl font-bold"
-                                    aria-label="Close modal"
-                                >
-                                    &times;
-                                </button>
+    <!-- Participants -->
+    <h2 class="mb-3 fw-bold text-secondary fs-4">Participants</h2>
 
-                                <h2 class="text-2xl font-semibold mb-4">Payments History for {{ $participant->name }}</h2>
+    <form method="POST" action="{{ route('participants.store', $event) }}" class="row g-3 mb-4">
+        @csrf
+        <div class="col-md-5">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" required class="form-control">
+        </div>
+        <div class="col-md-5">
+            <label class="form-label">Expected Contribution ($)</label>
+            <input type="number" step="0.01" name="expected_contribution" required class="form-control">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Add Participant</button>
+        </div>
+    </form>
 
-                                @if($participant->payments->isEmpty())
-                                    <p>No payments made yet.</p>
-                                @else
-                                    <table class="min-w-full bg-white rounded shadow">
-                                        <thead class="bg-gray-200 sticky top-0">
-                                            <tr>
-                                                <th class="py-2 px-4 text-left">Payment Amount</th>
-                                                <th class="py-2 px-4 text-left">Payment Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($participant->payments as $payment)
-                                                <tr class="border-t">
-                                                    <td class="py-2 px-4">${{ number_format($payment->amount, 2) }}</td>
-                                                    <td class="py-2 px-4">{{ \Carbon\Carbon::parse($payment->paid_at)->format('M d, Y') }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                @endif
+    @if($event->participants->isEmpty())
+        <p class="text-muted">No participants yet.</p>
+    @else
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Expected Contribution</th>
+                        <th>Total Paid</th>
+                        <th>Add Payment</th>
+                        <th>View Payments</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($event->participants as $participant)
+                    <tr>
+                        <td>{{ $participant->name }}</td>
+                        <td>${{ number_format($participant->expected_contribution, 2) }}</td>
+                        <td>${{ number_format($participant->total_paid, 2) }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('payments.store', $participant) }}" class="d-flex flex-wrap gap-2">
+                                @csrf
+                                <input type="number" step="0.01" name="amount" placeholder="Amount" required class="form-control form-control-sm w-auto">
+                                <input type="date" name="paid_at" required class="form-control form-control-sm w-auto">
+                                <button type="submit" class="btn btn-success btn-sm">Add</button>
+                            </form>
+                        </td>
+                        <td>
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#paymentModal{{ $participant->id }}">
+                                View
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="paymentModal{{ $participant->id }}" tabindex="-1" aria-labelledby="paymentModalLabel{{ $participant->id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="paymentModalLabel{{ $participant->id }}">Payments for {{ $participant->name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @if($participant->payments->isEmpty())
+                                                <p class="text-muted">No payments recorded.</p>
+                                            @else
+                                                <table class="table table-sm table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Amount</th>
+                                                            <th>Date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($participant->payments as $payment)
+                                                        <tr>
+                                                            <td>${{ number_format($payment->amount, 2) }}</td>
+                                                            <td>{{ \Carbon\Carbon::parse($payment->paid_at)->format('M d, Y') }}</td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            @endif
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-@endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 
-<hr class="mb-6" />
+    <hr>
 
-<!-- Expenses Section -->
-<h2 class="text-2xl font-semibold mb-4">Expenses</h2>
+    <!-- Expenses -->
+    <h2 class="mb-3 fw-bold text-danger fs-4">Expenses</h2>
 
-<form method="POST" action="{{ route('expenses.store', $event) }}" class="mb-6 max-w-lg bg-white p-4 rounded shadow">
-    @csrf
-    <div class="mb-4">
-        <label class="block mb-1 font-medium">Category</label>
-        <select name="category" required class="w-full border rounded p-2">
-            <option value="">Select Category</option>
-            <option value="Food">Food</option>
-            <option value="Hotel">Hotel</option>
-            <option value="Travel">Travel</option>
-            <option value="Other">Other</option>
-        </select>
-    </div>
-    <div class="mb-4">
-        <label class="block mb-1 font-medium">Description</label>
-        <textarea name="description" rows="2" class="w-full border rounded p-2"></textarea>
-    </div>
-    <div class="mb-4">
-        <label class="block mb-1 font-medium">Amount ($)</label>
-        <input type="number" step="0.01" name="amount" required class="w-full border rounded p-2" />
-    </div>
-    <div class="mb-4">
-        <label class="block mb-1 font-medium">Expense Date</label>
-        <input type="date" name="expense_date" required class="w-full border rounded p-2" />
-    </div>
-    <button type="submit" class="bg-red-600 text-black px-4 py-2 rounded hover:bg-red-700">Add Expense</button>
-</form>
+    <form method="POST" action="{{ route('expenses.store', $event) }}" class="row g-3 mb-4">
+        @csrf
+        <div class="col-md-4">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select" required>
+                <option value="">Select</option>
+                <option value="Food">Food</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Travel">Travel</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Amount ($)</label>
+            <input type="number" step="0.01" name="amount" required class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Date</label>
+            <input type="date" name="expense_date" required class="form-control">
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Description</label>
+            <textarea name="description" rows="2" class="form-control"></textarea>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-danger">Add Expense</button>
+        </div>
+    </form>
 
-@if($event->expenses->isEmpty())
-    <p>No expenses recorded yet.</p>
-@else
-    <table class="min-w-full bg-white rounded shadow">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="py-2 px-4 text-left">Category</th>
-                <th class="py-2 px-4 text-left">Description</th>
-                <th class="py-2 px-4 text-left">Amount</th>
-                <th class="py-2 px-4 text-left">Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($event->expenses as $expense)
-                <tr class="border-t">
-                    <td class="py-2 px-4">{{ $expense->category }}</td>
-                    <td class="py-2 px-4">{{ $expense->description ?? '-' }}</td>
-                    <td class="py-2 px-4">${{ number_format($expense->amount, 2) }}</td>
-                    <td class="py-2 px-4">{{ $expense->expense_date->format('M d, Y') }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-@endif
-
+    @if($event->expenses->isEmpty())
+        <p class="text-muted">No expenses recorded.</p>
+    @else
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($event->expenses as $expense)
+                    <tr>
+                        <td>{{ $expense->category }}</td>
+                        <td>{{ $expense->description ?? '-' }}</td>
+                        <td>${{ number_format($expense->amount, 2) }}</td>
+                        <td>{{ $expense->expense_date->format('M d, Y') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+</div>
 @endsection
